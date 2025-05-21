@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Processar JSON com Coordenadas</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f6f8;
+      padding: 0;
+      margin: 0;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 50px auto;
+      background: #fff;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #2c3e50;
+    }
+
+    label {
+      font-weight: 600;
+      display: block;
+      margin-top: 20px;
+    }
+
+    input[type="number"],
+    input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 25px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    pre {
+      background: #f0f0f0;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 20px;
+      overflow-x: auto;
+    }
+
+    a#downloadLink {
+      display: none;
+      margin-top: 15px;
+      padding: 10px 20px;
+      background-color: #2ecc71;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+
+    a#downloadLink:hover {
+      background-color: #27ae60;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Processar JSON com Coordenadas</h2>
+
+    <label>Arquivo JSON:</label>
+    <input type="file" id="fileInput" accept=".json" />
+
+    <label>Coordenadas Originais (x, y, z):</label>
+    <input type="number" id="xOrigem" placeholder="X origem" step="any" />
+    <input type="number" id="yOrigem" placeholder="Y origem" step="any" />
+    <input type="number" id="zOrigem" placeholder="Z origem" step="any" />
+
+    <label>Coordenadas Novas (x, y, z):</label>
+    <input type="number" id="xNovo" placeholder="X novo" step="any" />
+    <input type="number" id="yNovo" placeholder="Y novo" step="any" />
+    <input type="number" id="zNovo" placeholder="Z novo" step="any" />
+
+    <button onclick="enviarArquivo()">Enviar e Processar</button>
+
+    <pre id="resultadoJson"></pre>
+    <a id="downloadLink" download="arquivoAtualizado.json">⬇ Baixar JSON</a>
+  </div>
+
+  <script>
+    async function enviarArquivo() {
+      const fileInput = document.getElementById("fileInput");
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert("Selecione um arquivo JSON.");
+        return;
+      }
+
+      const coords = (ids) =>
+        ids.map((id) => {
+          const val = parseFloat(document.getElementById(id).value);
+          if (isNaN(val)) throw new Error("Preencha todas as coordenadas corretamente.");
+          return val;
+        });
+
+      let originalCoordinates, newCoordinates;
+      try {
+        originalCoordinates = coords(["xOrigem", "yOrigem", "zOrigem"]);
+        newCoordinates = coords(["xNovo", "yNovo", "zNovo"]);
+      } catch (e) {
+        alert(e.message);
+        return;
+      }
+
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(",")[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const payload = {
+        file: base64,
+        originalCoordinates,
+        newCoordinates,
+      };
+
+      try {
+        const resposta = await fetch("http://localhost:5000/adapter", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!resposta.ok) {
+          const erro = await resposta.json();
+          throw new Error(erro.error || "Erro desconhecido.");
+        }
+
+        const base64Resposta = await resposta.text();
+        const jsonString = atob(base64Resposta);
+
+        document.getElementById("resultadoJson").textContent = jsonString;
+
+        const blob = new Blob([jsonString], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.getElementById("downloadLink");
+        link.href = url;
+        link.style.display = "inline-block";
+      } catch (erro) {
+        alert("Erro ao processar o arquivo: " + erro.message);
+        console.error(erro);
+      }
+    }
+  </script>
+</body>
+</html>

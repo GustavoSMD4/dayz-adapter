@@ -1,9 +1,11 @@
 from adapter import Adapter
+from generator import BaseGenerator
 
 
 class Service:
     def __init__(self):
         self.__adapter = Adapter()
+        self.__generator = BaseGenerator()
     
     @classmethod
     def newService(cls):
@@ -24,4 +26,12 @@ class Service:
             raise Exception("newCoordinates not valid")
         
         return self.__adapter.convertJsonCoordinates(file, originalCoordinates, newCoordinates)
+    
+    def generateTent(self, req: dict):
+        coordinates = req.get("coordinates")
+        
+        if coordinates is None or len(coordinates) != 3:
+            raise Exception("coordinates not valid")
+        
+        return self.__generator.generateTent(coordinates)
         

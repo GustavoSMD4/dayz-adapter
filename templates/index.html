@@ -26,6 +26,30 @@
             color: #2c3e50;
         }
 
+        .tab-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .tab-buttons button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+            border-radius: 6px 6px 0 0;
+            margin-right: 4px;
+        }
+
+        .tab-buttons button.active {
+            background-color: #3498db;
+            color: white;
+        }
+
         label {
             font-weight: 600;
             display: block;
@@ -41,7 +65,7 @@
             border-radius: 6px;
         }
 
-        button {
+        button[type="submit"] {
             width: 100%;
             padding: 12px;
             margin-top: 25px;
@@ -53,7 +77,7 @@
             cursor: pointer;
         }
 
-        button:hover {
+        button[type="submit"]:hover {
             background-color: #2980b9;
         }
 
@@ -79,33 +103,78 @@
         a#downloadLink:hover {
             background-color: #27ae60;
         }
+
+        #formOriginal,
+        #formTenda {
+            display: none;
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <h2>Processar JSON com Coordenadas</h2>
+        <h2>Processar JSON</h2>
 
-        <label>Arquivo JSON:</label>
-        <input type="file" id="fileInput" accept=".json" />
+        <div class="tab-buttons">
+            <button id="tabCoord" class="active" onclick="mostrarAba('formOriginal')">🔄 Converter Coordenadas</button>
+            <button id="tabTenda" onclick="mostrarAba('formTenda')">🛖 Gerar Base Tenda</button>
+        </div>
 
-        <label>Coordenadas Originais (x, y, z):</label>
-        <input type="number" id="xOrigem" placeholder="X origem" step="any" />
-        <input type="number" id="yOrigem" placeholder="Y origem" step="any" />
-        <input type="number" id="zOrigem" placeholder="Z origem" step="any" />
+        <div id="formOriginal">
+            <label>Arquivo JSON:</label>
+            <input type="file" id="fileInput" accept=".json" />
 
-        <label>Coordenadas Novas (x, y, z):</label>
-        <input type="number" id="xNovo" placeholder="X novo" step="any" />
-        <input type="number" id="yNovo" placeholder="Y novo" step="any" />
-        <input type="number" id="zNovo" placeholder="Z novo" step="any" />
+            <label>Coordenadas Originais (x, y, z):</label>
+            <input type="number" id="xOrigem" placeholder="X origem" step="any" />
+            <input type="number" id="yOrigem" placeholder="Y origem" step="any" />
+            <input type="number" id="zOrigem" placeholder="Z origem" step="any" />
 
-        <button onclick="enviarArquivo()">Enviar e Processar</button>
+            <label>Coordenadas Novas (x, y, z):</label>
+            <input type="number" id="xNovo" placeholder="X novo" step="any" />
+            <input type="number" id="yNovo" placeholder="Y novo" step="any" />
+            <input type="number" id="zNovo" placeholder="Z novo" step="any" />
+
+            <button type="submit" onclick="enviarArquivo()">Enviar e Processar</button>
+        </div>
+
+        <div id="formTenda">
+            <label>Coordenadas da Tenda (x, y, z):</label>
+            <input type="number" id="xTenda" placeholder="X" step="any" />
+            <input type="number" id="yTenda" placeholder="Y" step="any" />
+            <input type="number" id="zTenda" placeholder="Z" step="any" />
+
+            <button type="submit" onclick="gerarBaseTenda()">Gerar Base</button>
+        </div>
 
         <pre id="resultadoJson"></pre>
         <a id="downloadLink" download="arquivoAtualizado.json">⬇ Baixar JSON</a>
     </div>
 
     <script>
+        // Exibe aba selecionada
+        function mostrarAba(formId) {
+            document.getElementById("formOriginal").style.display = "none";
+            document.getElementById("formTenda").style.display = "none";
+
+            document.getElementById(formId).style.display = "block";
+
+            // Estilo ativo nos botões
+            document.getElementById("tabCoord").classList.remove("active");
+            document.getElementById("tabTenda").classList.remove("active");
+
+            if (formId === "formOriginal") {
+                document.getElementById("tabCoord").classList.add("active");
+            } else {
+                document.getElementById("tabTenda").classList.add("active");
+            }
+
+            document.getElementById("resultadoJson").textContent = "";
+            document.getElementById("downloadLink").style.display = "none";
+        }
+
+        // Exibe a aba padrão ao carregar
+        window.onload = () => mostrarAba("formOriginal");
+
         async function enviarArquivo() {
             const fileInput = document.getElementById("fileInput");
             const file = fileInput.files[0];
@@ -160,18 +229,53 @@
 
                 const base64Resposta = await resposta.text();
                 const jsonString = atob(base64Resposta);
-
-                document.getElementById("resultadoJson").textContent = jsonString;
-
-                const blob = new Blob([jsonString], { type: "application/json" });
-                const url = URL.createObjectURL(blob);
-                const link = document.getElementById("downloadLink");
-                link.href = url;
-                link.style.display = "inline-block";
+                exibirResultado(jsonString);
             } catch (erro) {
                 alert("Erro ao processar o arquivo: " + erro.message);
                 console.error(erro);
             }
+        }
+
+        async function gerarBaseTenda() {
+            const coords = ["xTenda", "yTenda", "zTenda"].map(id => {
+                const val = parseFloat(document.getElementById(id).value);
+                if (isNaN(val)) throw new Error("Preencha todas as coordenadas da tenda.");
+                return val;
+            });
+
+            const payload = { coordinates: coords };
+
+            try {
+                const resposta = await fetch("https://gustavosmd4dayzadapter.pythonanywhere.com/generator/tent", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                if (!resposta.ok) {
+                    const erro = await resposta.json();
+                    throw new Error(erro.error || "Erro ao gerar base da Tenda.");
+                }
+
+                const base64Resposta = await resposta.text();
+                const jsonString = atob(base64Resposta);
+                exibirResultado(jsonString);
+            } catch (erro) {
+                alert("Erro ao gerar base da Tenda: " + erro.message);
+                console.error(erro);
+            }
+        }
+
+        function exibirResultado(jsonString) {
+            document.getElementById("resultadoJson").textContent = jsonString;
+
+            const blob = new Blob([jsonString], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const link = document.getElementById("downloadLink");
+            link.href = url;
+            link.style.display = "inline-block";
         }
     </script>
 </body>

@@ -1,9 +1,9 @@
 from flask import Flask, make_response, request, jsonify, render_template
-from flask_cors import CORS
+# from flask_cors import CORS
 from service import Service
 
 app = Flask(__name__)
-CORS(app)
+# CORS(app)
 
 @app.route("/")
 def indexHtml():

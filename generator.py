@@ -1,13 +1,20 @@
 import base64
 import json
+from typing import Literal
 
 class BaseGenerator:
     def __init__(self):
         self.__tentBaseFile = "tent.json"
         
-    def generateTent(self, coordinates: list[float, float, float]):
-        with open(self.__tentBaseFile, 'r', encoding='utf-8') as f:
-            data = json.load(f)
+    def generator(self, coordinates: list[float, float, float], type: Literal["tent"]):
+        data = ""
+        
+        if type == "tent":
+            with open(self.__tentBaseFile, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+        
+        else:
+            raise Exception("invalid type")
         
         originalCoordinates = [6605, 9054, 359]
 

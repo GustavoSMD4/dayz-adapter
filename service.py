@@ -29,9 +29,13 @@ class Service:
     
     def generateTent(self, req: dict):
         coordinates = req.get("coordinates")
+        type = req.get("type")
         
         if coordinates is None or len(coordinates) != 3:
             raise Exception("coordinates not valid")
         
-        return self.__generator.generateTent(coordinates)
+        if type is None:
+            raise Exception("type invalid")
+        
+        return self.__generator.generator(coordinates, type)
         

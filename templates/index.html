@@ -2,294 +2,318 @@
 <html lang="pt-BR">
 
 <head>
-  <meta charset="UTF-8" />
-  <title>Processar JSON</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f4f6f8;
-      margin: 0;
-    }
+    <meta charset="UTF-8" />
+    <title>Processar JSON</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+        }
 
-    .container {
-      max-width: 600px;
-      margin: 50px auto;
-      background: #fff;
-      border-radius: 10px;
-      padding: 30px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-    }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background: #fff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
 
-    h2 {
-      text-align: center;
-      color: #2c3e50;
-    }
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+        }
 
-    .tab-buttons {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 20px;
-    }
+        .tab-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
 
-    .tab-buttons button {
-      flex: 1;
-      padding: 12px;
-      border: none;
-      background-color: #ecf0f1;
-      color: #2c3e50;
-      cursor: pointer;
-      font-weight: bold;
-      transition: background 0.3s;
-      border-radius: 6px 6px 0 0;
-      margin-right: 4px;
-    }
+        .tab-buttons button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+            border-radius: 6px 6px 0 0;
+            margin-right: 4px;
+        }
 
-    .tab-buttons button.active {
-      background-color: #3498db;
-      color: white;
-    }
+        .tab-buttons button.active {
+            background-color: #3498db;
+            color: white;
+        }
 
-    label {
-      font-weight: 600;
-      display: block;
-      margin-top: 20px;
-    }
+        label {
+            font-weight: 600;
+            display: block;
+            margin-top: 20px;
+        }
 
-    input[type="number"],
-    input[type="file"],
-    select {
-      width: 100%;
-      padding: 10px;
-      margin-top: 6px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
+        input[type="number"],
+        input[type="file"],
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
 
-    button[type="submit"] {
-      width: 100%;
-      padding: 12px;
-      margin-top: 25px;
-      background-color: #3498db;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 16px;
-      cursor: pointer;
-    }
+        button[type="submit"] {
+            width: 100%;
+            padding: 12px;
+            margin-top: 25px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
 
-    button[type="submit"]:hover {
-      background-color: #2980b9;
-    }
+        button[type="submit"]:hover {
+            background-color: #2980b9;
+        }
 
-    pre {
-      background: #f0f0f0;
-      padding: 15px;
-      border-radius: 6px;
-      margin-top: 20px;
-      overflow-x: auto;
-    }
+        pre {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+            overflow-x: auto;
+        }
 
-    a#downloadLink {
-      display: none;
-      margin-top: 15px;
-      padding: 10px 20px;
-      background-color: #2ecc71;
-      color: white;
-      text-decoration: none;
-      border-radius: 6px;
-      font-weight: bold;
-    }
+        a#downloadLink {
+            display: none;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background-color: #2ecc71;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+        }
 
-    a#downloadLink:hover {
-      background-color: #27ae60;
-    }
+        a#downloadLink:hover {
+            background-color: #27ae60;
+        }
 
-    #formOriginal,
-    #formGerador {
-      display: none;
-    }
-  </style>
+        #formOriginal,
+        #formGerador {
+            display: none;
+        }
+    </style>
 </head>
 
 <body>
-  <div class="container">
-    <h2>Processar JSON</h2>
+    <div class="container">
+        <h2>Processar JSON</h2>
 
-    <div class="tab-buttons">
-      <button id="tabCoord" class="active" onclick="mostrarAba('formOriginal')">🔄 Converter Coordenadas</button>
-      <button id="tabGerador" onclick="mostrarAba('formGerador')">⚙️ Gerador</button>
+        <div class="tab-buttons">
+            <button id="tabCoord" class="active" onclick="mostrarAba('formOriginal')">🔄 Converter Coordenadas</button>
+            <button id="tabGerador" onclick="mostrarAba('formGerador')">⚙️ Gerador</button>
+        </div>
+
+        <!-- Aba: Conversão -->
+        <div id="formOriginal">
+            <label>Arquivo JSON:</label>
+            <input type="file" id="fileInput" accept=".json" />
+
+            <label>Coordenadas Originais (x, y, z):</label>
+            <input type="number" id="xOrigem" placeholder="X origem" step="any" />
+            <input type="number" id="yOrigem" placeholder="Y origem" step="any" />
+            <input type="number" id="zOrigem" placeholder="Z origem" step="any" />
+
+            <label>Coordenadas Novas (x, y, z):</label>
+            <input type="number" id="xNovo" placeholder="X novo" step="any" />
+            <input type="number" id="yNovo" placeholder="Y novo" step="any" />
+            <input type="number" id="zNovo" placeholder="Z novo" step="any" />
+
+            <button type="submit" onclick="enviarArquivo()">Enviar e Processar</button>
+        </div>
+
+        <!-- Aba: Gerador -->
+        <div id="formGerador">
+            <label>Tipo de Objeto:</label>
+            <select id="tipoGerador">
+                <option value="tent">Tenda</option>
+                <!-- Outras opções podem ser adicionadas aqui -->
+            </select>
+
+            <label>Coordenadas (x, y, z):</label>
+            <input type="number" id="xGerador" placeholder="X" step="any" />
+            <input type="number" id="yGerador" placeholder="Y" step="any" />
+            <input type="number" id="zGerador" placeholder="Z" step="any" />
+
+            <button type="submit" onclick="gerarBase()">Gerar</button>
+        </div>
+
+        <pre id="resultadoJson"></pre>
+        <a id="downloadLink" download="arquivoAtualizado.json">⬇ Baixar JSON</a>
     </div>
 
-    <!-- Aba: Conversão -->
-    <div id="formOriginal">
-      <label>Arquivo JSON:</label>
-      <input type="file" id="fileInput" accept=".json" />
+    <script>
+        // Alterna abas
+        async function mostrarAba(formId) {
+            document.getElementById("formOriginal").style.display = "none";
+            document.getElementById("formGerador").style.display = "none";
 
-      <label>Coordenadas Originais (x, y, z):</label>
-      <input type="number" id="xOrigem" placeholder="X origem" step="any" />
-      <input type="number" id="yOrigem" placeholder="Y origem" step="any" />
-      <input type="number" id="zOrigem" placeholder="Z origem" step="any" />
+            document.getElementById(formId).style.display = "block";
 
-      <label>Coordenadas Novas (x, y, z):</label>
-      <input type="number" id="xNovo" placeholder="X novo" step="any" />
-      <input type="number" id="yNovo" placeholder="Y novo" step="any" />
-      <input type="number" id="zNovo" placeholder="Z novo" step="any" />
+            document.getElementById("tabCoord").classList.remove("active");
+            document.getElementById("tabGerador").classList.remove("active");
 
-      <button type="submit" onclick="enviarArquivo()">Enviar e Processar</button>
-    </div>
+            if (formId === "formOriginal") {
+                document.getElementById("tabCoord").classList.add("active");
+            } else {
+                document.getElementById("tabGerador").classList.add("active");
+                await carregarTiposDeBase();
+            }
 
-    <!-- Aba: Gerador -->
-    <div id="formGerador">
-      <label>Tipo de Objeto:</label>
-      <select id="tipoGerador">
-        <option value="tent">Tenda</option>
-        <!-- Outras opções podem ser adicionadas aqui -->
-      </select>
-
-      <label>Coordenadas (x, y, z):</label>
-      <input type="number" id="xGerador" placeholder="X" step="any" />
-      <input type="number" id="yGerador" placeholder="Y" step="any" />
-      <input type="number" id="zGerador" placeholder="Z" step="any" />
-
-      <button type="submit" onclick="gerarBase()">Gerar</button>
-    </div>
-
-    <pre id="resultadoJson"></pre>
-    <a id="downloadLink" download="arquivoAtualizado.json">⬇ Baixar JSON</a>
-  </div>
-
-  <script>
-    // Alterna abas
-    function mostrarAba(formId) {
-      document.getElementById("formOriginal").style.display = "none";
-      document.getElementById("formGerador").style.display = "none";
-
-      document.getElementById(formId).style.display = "block";
-
-      document.getElementById("tabCoord").classList.remove("active");
-      document.getElementById("tabGerador").classList.remove("active");
-
-      if (formId === "formOriginal") {
-        document.getElementById("tabCoord").classList.add("active");
-      } else {
-        document.getElementById("tabGerador").classList.add("active");
-      }
-
-      document.getElementById("resultadoJson").textContent = "";
-      document.getElementById("downloadLink").style.display = "none";
-    }
-
-    window.onload = () => mostrarAba("formOriginal");
-
-    // Conversão coordenadas (aba 1)
-    async function enviarArquivo() {
-      const fileInput = document.getElementById("fileInput");
-      const file = fileInput.files[0];
-
-      if (!file) {
-        alert("Selecione um arquivo JSON.");
-        return;
-      }
-
-      const coords = (ids) =>
-        ids.map((id) => {
-          const val = parseFloat(document.getElementById(id).value);
-          if (isNaN(val)) throw new Error("Preencha todas as coordenadas corretamente.");
-          return val;
-        });
-
-      let originalCoordinates, newCoordinates;
-      try {
-        originalCoordinates = coords(["xOrigem", "yOrigem", "zOrigem"]);
-        newCoordinates = coords(["xNovo", "yNovo", "zNovo"]);
-      } catch (e) {
-        alert(e.message);
-        return;
-      }
-
-      const base64 = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result.split(",")[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-
-      const payload = {
-        file: base64,
-        originalCoordinates,
-        newCoordinates,
-      };
-
-      try {
-        const resposta = await fetch("https://gustavosmd4dayzadapter.pythonanywhere.com/adapter", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        });
-
-        if (!resposta.ok) {
-          const erro = await resposta.json();
-          throw new Error(erro.error || "Erro desconhecido.");
+            document.getElementById("resultadoJson").textContent = "";
+            document.getElementById("downloadLink").style.display = "none";
         }
 
-        const base64Resposta = await resposta.text();
-        const jsonString = atob(base64Resposta);
-        exibirResultado(jsonString);
-      } catch (erro) {
-        alert("Erro ao processar o arquivo: " + erro.message);
-        console.error(erro);
-      }
-    }
+        window.onload = () => mostrarAba("formOriginal");
 
-    // Gerador (aba 2)
-    async function gerarBase() {
-      const tipo = document.getElementById("tipoGerador").value;
-      const coords = ["xGerador", "yGerador", "zGerador"].map(id => {
-        const val = parseFloat(document.getElementById(id).value);
-        if (isNaN(val)) throw new Error("Preencha todas as coordenadas.");
-        return val;
-      });
+        // Conversão coordenadas (aba 1)
+        async function enviarArquivo() {
+            const fileInput = document.getElementById("fileInput");
+            const file = fileInput.files[0];
 
-      const payload = {
-        type: tipo,
-        coordinates: coords
-      };
+            if (!file) {
+                alert("Selecione um arquivo JSON.");
+                return;
+            }
 
-      try {
-        const resposta = await fetch("https://gustavosmd4dayzadapter.pythonanywhere.com/generator", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        });
+            const coords = (ids) =>
+                ids.map((id) => {
+                    const val = parseFloat(document.getElementById(id).value);
+                    if (isNaN(val)) throw new Error("Preencha todas as coordenadas corretamente.");
+                    return val;
+                });
 
-        if (!resposta.ok) {
-          const erro = await resposta.json();
-          throw new Error(erro.error || "Erro ao gerar base.");
+            let originalCoordinates, newCoordinates;
+            try {
+                originalCoordinates = coords(["xOrigem", "yOrigem", "zOrigem"]);
+                newCoordinates = coords(["xNovo", "yNovo", "zNovo"]);
+            } catch (e) {
+                alert(e.message);
+                return;
+            }
+
+            const base64 = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result.split(",")[1]);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+
+            const payload = {
+                file: base64,
+                originalCoordinates,
+                newCoordinates,
+            };
+
+            try {
+                const resposta = await fetch("http://localhost:5000/adapter", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                if (!resposta.ok) {
+                    const erro = await resposta.json();
+                    throw new Error(erro.error || "Erro desconhecido.");
+                }
+
+                const base64Resposta = await resposta.text();
+                const jsonString = atob(base64Resposta);
+                exibirResultado(jsonString);
+            } catch (erro) {
+                alert("Erro ao processar o arquivo: " + erro.message);
+                console.error(erro);
+            }
         }
 
-        const base64Resposta = await resposta.text();
-        const jsonString = atob(base64Resposta);
-        exibirResultado(jsonString);
-      } catch (erro) {
-        alert("Erro ao gerar base: " + erro.message);
-        console.error(erro);
-      }
-    }
+        // Gerador (aba 2)
+        async function gerarBase() {
+            const tipo = document.getElementById("tipoGerador").value;
+            const coords = ["xGerador", "yGerador", "zGerador"].map(id => {
+                const val = parseFloat(document.getElementById(id).value);
+                if (isNaN(val)) throw new Error("Preencha todas as coordenadas.");
+                return val;
+            });
 
-    function exibirResultado(jsonString) {
-      document.getElementById("resultadoJson").textContent = jsonString;
+            const payload = {
+                type: tipo,
+                coordinates: coords
+            };
 
-      const blob = new Blob([jsonString], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const link = document.getElementById("downloadLink");
-      link.href = url;
-      link.style.display = "inline-block";
-    }
-  </script>
+            try {
+                const resposta = await fetch("http://localhost:5000/generator", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                if (!resposta.ok) {
+                    const erro = await resposta.json();
+                    throw new Error(erro.error || "Erro ao gerar base.");
+                }
+
+                const base64Resposta = await resposta.text();
+                const jsonString = atob(base64Resposta);
+                exibirResultado(jsonString);
+            } catch (erro) {
+                alert("Erro ao gerar base: " + erro.message);
+                console.error(erro);
+            }
+        }
+
+        function exibirResultado(jsonString) {
+            document.getElementById("resultadoJson").textContent = jsonString;
+
+            const blob = new Blob([jsonString], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const link = document.getElementById("downloadLink");
+            link.href = url;
+            link.style.display = "inline-block";
+        }
+
+        async function carregarTiposDeBase() {
+            const select = document.getElementById("tipoGerador");
+            select.innerHTML = '<option disabled selected>Carregando...</option>';
+
+            try {
+                const resposta = await fetch("http://localhost:5000/files/names");
+                const nomes = await resposta.json();
+
+                if (!Array.isArray(nomes)) throw new Error("Resposta inválida da API.");
+
+                select.innerHTML = ""; // Limpa e insere novas opções
+                nomes.forEach(nome => {
+                    const opt = document.createElement("option");
+                    opt.value = nome;
+                    opt.textContent = nome.charAt(0).toUpperCase() + nome.slice(1); // Ex: tent → Tent
+                    select.appendChild(opt);
+                });
+            } catch (erro) {
+                select.innerHTML = '<option disabled>Erro ao carregar opções</option>';
+                console.error("Erro ao buscar tipos de base:", erro);
+            }
+        }
+    </script>
 </body>
 
 </html>

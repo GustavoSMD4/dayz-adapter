@@ -1,11 +1,13 @@
 from adapter import Adapter
 from generator import BaseGenerator
+from repo.repo import Repo
 
 
 class Service:
     def __init__(self):
         self.__adapter = Adapter()
         self.__generator = BaseGenerator()
+        self.__conn = Repo()
     
     @classmethod
     def newService(cls):
@@ -38,4 +40,7 @@ class Service:
             raise Exception("type invalid")
         
         return self.__generator.generator(coordinates, type)
+    
+    def getFilesNames(self):
+        return self.__conn.consultarFilesNames()
         

@@ -22,7 +22,7 @@ class Adapter:
 
         jsonStr = json.dumps(data, ensure_ascii=False)
         jsonBytes = jsonStr.encode('utf-8')
-        newBase64 = base64.b64encode(jsonBytes).decode('utf-8')
+        newBase64 = base64.b64encode(jsonBytes).decode()
 
         return newBase64
 

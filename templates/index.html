@@ -145,7 +145,7 @@
             };
 
             try {
-                const resposta = await fetch("http://localhost:5000/adapter", {
+                const resposta = await fetch("https://gustavosmd4dayzadapter.pythonanywhere.com/adapter", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -158,8 +158,7 @@
                     throw new Error(erro.error || "Erro desconhecido.");
                 }
 
-                const raw = await resposta.text();
-                const base64Resposta = raw.replace(/^"|"$/g, ""); // remove aspas duplas externas
+                const base64Resposta = await resposta.text();
                 const jsonString = atob(base64Resposta);
 
                 document.getElementById("resultadoJson").textContent = jsonString;

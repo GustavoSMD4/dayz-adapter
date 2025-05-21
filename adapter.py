@@ -5,21 +5,26 @@ class Adapter:
     def __init__(self):
         pass
     
-    def convertJsonCoordinates(self, file, originalCoordinates, newCoordinates):
-        with open(file, 'r') as f:
-            dados = json.load(f)
+    def convertJsonCoordinates(self, base64File, originalCoordinates, newCoordinates):
+        decodedBytes = base64.b64decode(base64File)
+        decodedStr = decodedBytes.decode('utf-8')
+        data = json.loads(decodedStr)
 
-        for obj in dados.get("Objects", []):
+        for obj in data.get("Objects", []):
             if 'pos' in obj:
                 diffX = obj['pos'][0] - originalCoordinates[0]
-                diffY = obj['pos'][2] - originalCoordinates[1] 
-                diffZ = obj['pos'][1] - originalCoordinates[2] 
+                diffY = obj['pos'][2] - originalCoordinates[1]
+                diffZ = obj['pos'][1] - originalCoordinates[2]
 
-                obj['pos'][0] = newCoordinates[0] + diffX 
-                obj['pos'][1] = newCoordinates[2] + diffZ  
-                obj['pos'][2] = newCoordinates[1] + diffY 
+                obj['pos'][0] = newCoordinates[0] + diffX
+                obj['pos'][1] = newCoordinates[2] + diffZ
+                obj['pos'][2] = newCoordinates[1] + diffY
 
-        return self.salvarBase64(dados)
+        jsonStr = json.dumps(data, ensure_ascii=False)
+        jsonBytes = jsonStr.encode('utf-8')
+        newBase64 = base64.b64encode(jsonBytes).decode('utf-8')
+
+        return newBase64
 
     @staticmethod
     def salvarBase64(dados):

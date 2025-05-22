@@ -29,6 +29,8 @@
             display: flex;
             justify-content: space-between;
             margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 4px;
         }
 
         .tab-buttons button {
@@ -41,7 +43,6 @@
             font-weight: bold;
             transition: background 0.3s;
             border-radius: 6px 6px 0 0;
-            margin-right: 4px;
         }
 
         .tab-buttons button.active {
@@ -57,6 +58,7 @@
 
         input[type="number"],
         input[type="file"],
+        input[type="text"],
         select {
             width: 100%;
             padding: 10px;
@@ -105,7 +107,8 @@
         }
 
         #formOriginal,
-        #formGerador {
+        #formGerador,
+        #formUpload {
             display: none;
         }
     </style>
@@ -118,6 +121,7 @@
         <div class="tab-buttons">
             <button id="tabCoord" class="active" onclick="mostrarAba('formOriginal')">🔄 Converter Coordenadas</button>
             <button id="tabGerador" onclick="mostrarAba('formGerador')">⚙️ Gerador</button>
+            <button id="tabUpload" onclick="mostrarAba('formUpload')">📤 Upload de Arquivo</button>
         </div>
 
         <!-- Aba: Conversão -->
@@ -143,7 +147,6 @@
             <label>Tipo de Objeto:</label>
             <select id="tipoGerador">
                 <option value="tent">Tenda</option>
-                <!-- Outras opções podem ser adicionadas aqui -->
             </select>
 
             <label>Coordenadas (x, y, z):</label>
@@ -154,26 +157,38 @@
             <button type="submit" onclick="gerarBase()">Gerar</button>
         </div>
 
+        <!-- Aba: Upload -->
+        <div id="formUpload">
+            <label>Descrição do Arquivo:</label>
+            <input type="text" id="descricaoUpload" placeholder="Ex: Tenda militar norte" />
+
+            <label>Arquivo JSON:</label>
+            <input type="file" id="fileUploadInput" accept=".json" />
+
+            <button type="submit" onclick="uploadArquivo()">Enviar Arquivo</button>
+        </div>
+
         <pre id="resultadoJson"></pre>
         <a id="downloadLink" download="arquivoAtualizado.json">⬇ Baixar JSON</a>
     </div>
 
     <script>
-        // Alterna abas
         async function mostrarAba(formId) {
-            document.getElementById("formOriginal").style.display = "none";
-            document.getElementById("formGerador").style.display = "none";
-
+            const abas = ["formOriginal", "formGerador", "formUpload"];
+            abas.forEach(id => document.getElementById(id).style.display = "none");
             document.getElementById(formId).style.display = "block";
 
-            document.getElementById("tabCoord").classList.remove("active");
-            document.getElementById("tabGerador").classList.remove("active");
+            ["tabCoord", "tabGerador", "tabUpload"].forEach(tab => {
+                document.getElementById(tab).classList.remove("active");
+            });
 
             if (formId === "formOriginal") {
                 document.getElementById("tabCoord").classList.add("active");
-            } else {
+            } else if (formId === "formGerador") {
                 document.getElementById("tabGerador").classList.add("active");
                 await carregarTiposDeBase();
+            } else {
+                document.getElementById("tabUpload").classList.add("active");
             }
 
             document.getElementById("resultadoJson").textContent = "";
@@ -182,7 +197,6 @@
 
         window.onload = () => mostrarAba("formOriginal");
 
-        // Conversão coordenadas (aba 1)
         async function enviarArquivo() {
             const fileInput = document.getElementById("fileInput");
             const file = fileInput.files[0];
@@ -222,7 +236,7 @@
             };
 
             try {
-                const resposta = await fetch("http://localhost:5000/adapter", {
+                const resposta = await fetch("https://gustavosmd4dayzadapter.pythonanywhere.com/adapter", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -244,7 +258,6 @@
             }
         }
 
-        // Gerador (aba 2)
         async function gerarBase() {
             const tipo = document.getElementById("tipoGerador").value;
             const coords = ["xGerador", "yGerador", "zGerador"].map(id => {
@@ -259,7 +272,7 @@
             };
 
             try {
-                const resposta = await fetch("http://localhost:5000/generator", {
+                const resposta = await fetch("https://gustavosmd4dayzadapter.pythonanywhere.com/generator", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -281,9 +294,52 @@
             }
         }
 
+        async function uploadArquivo() {
+            const descricao = document.getElementById("descricaoUpload").value.trim();
+            const file = document.getElementById("fileUploadInput").files[0];
+
+            if (!descricao || !file) {
+                alert("Preencha a descrição e selecione um arquivo JSON.");
+                return;
+            }
+
+            try {
+                const base64 = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result.split(",")[1]);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+
+                const payload = {
+                    descricao: descricao,
+                    file: base64
+                };
+
+                const resposta = await fetch("https://gustavosmd4dayzadapter.pythonanywhere.com/file/upload", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!resposta.ok) {
+                    const erro = await resposta.json();
+                    throw new Error(erro.error || "Erro ao enviar arquivo.");
+                }
+
+                alert("Arquivo enviado com sucesso!");
+                document.getElementById("descricaoUpload").value = "";
+                document.getElementById("fileUploadInput").value = "";
+            } catch (erro) {
+                alert("Erro no upload: " + erro.message);
+                console.error(erro);
+            }
+        }
+
         function exibirResultado(jsonString) {
             document.getElementById("resultadoJson").textContent = jsonString;
-
             const blob = new Blob([jsonString], { type: "application/json" });
             const url = URL.createObjectURL(blob);
             const link = document.getElementById("downloadLink");
@@ -296,18 +352,23 @@
             select.innerHTML = '<option disabled selected>Carregando...</option>';
 
             try {
-                const resposta = await fetch("http://localhost:5000/files/names");
-                const nomes = await resposta.json();
+                const resposta = await fetch("https://gustavosmd4dayzadapter.pythonanywhere.com/files/names");
 
-                if (!Array.isArray(nomes)) throw new Error("Resposta inválida da API.");
+                const nomes = await resposta.json(); // ✅ lê o body uma vez
 
-                select.innerHTML = ""; // Limpa e insere novas opções
+                if (!Array.isArray(nomes)) {
+                    console.error("Resposta inválida:", nomes);
+                    throw new Error("Resposta inválida da API.");
+                }
+
+                select.innerHTML = "";
                 nomes.forEach(nome => {
                     const opt = document.createElement("option");
                     opt.value = nome;
-                    opt.textContent = nome.charAt(0).toUpperCase() + nome.slice(1); // Ex: tent → Tent
+                    opt.textContent = nome.charAt(0).toUpperCase() + nome.slice(1);
                     select.appendChild(opt);
                 });
+
             } catch (erro) {
                 select.innerHTML = '<option disabled>Erro ao carregar opções</option>';
                 console.error("Erro ao buscar tipos de base:", erro);

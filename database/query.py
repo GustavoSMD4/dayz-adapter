@@ -1,3 +1,4 @@
+import base64
 import sqlite3
 
 conn = sqlite3.connect("database/database.db", check_same_thread=False)
@@ -14,13 +15,16 @@ cursor.execute("""
 def adicionarArquivoTent():
     with open("tent.json", "rb") as f:
         file_data = f.read()
-
-    descricao = "tent"
     
+    # Codifica em Base64 e converte para string
+    file_base64 = base64.b64encode(file_data).decode('utf-8')
+    
+    descricao = "tent"
+
     cursor.execute("""
         INSERT INTO FILES (DESCRICAO, FILE)
         VALUES (?, ?)
-    """, (descricao, file_data))
+    """, (descricao, file_base64))
     
     conn.commit()
 

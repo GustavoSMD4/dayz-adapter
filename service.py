@@ -1,3 +1,5 @@
+import base64
+import json
 from adapter import Adapter
 from generator import BaseGenerator
 from repo.repo import Repo
@@ -42,5 +44,22 @@ class Service:
         return self.__generator.generator(coordinates, type)
     
     def getFilesNames(self):
-        return self.__conn.consultarFilesNames()
+        dadosRaw = self.__conn.consultarFilesNames()
+        dados = []
+        for dado in dadosRaw:
+            dados.append(dado.get("descricao"))
+            
+        return dados
+      
+    def fileUpload(self, req: dict):
+        name = req.get("descricao")
+        file = req.get("file")
+        
+        try:
+            decoded = base64.b64decode(file)
+            json.loads(decoded.decode("utf-8"))
+        except Exception as e:
+            raise Exception("Arquivo inválido: o conteúdo não é um JSON válido.") from e
+
+        self.__conn.createFile(name, file)
         

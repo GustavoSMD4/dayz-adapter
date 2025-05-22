@@ -1,9 +1,9 @@
 from flask import Flask, make_response, request, jsonify, render_template
-from flask_cors import CORS
+# from flask_cors import CORS
 from service import Service
 
 app = Flask(__name__)
-CORS(app)
+# CORS(app)
 
 @app.route("/")
 def indexHtml():
@@ -33,6 +33,15 @@ def generateTent():
 def getFilesNames():
     try:
         return jsonify(Service.newService().getFilesNames())
+        
+    except Exception as e:
+        return jsonify(str(e)), 400
+    
+@app.route("/file/upload", methods=["POST"])
+def fileUpload():
+    try:
+        Service.newService().fileUpload(request.json)
+        return jsonify("Saved")
         
     except Exception as e:
         return jsonify(str(e)), 400

@@ -1,2 +1,4 @@
 __pycache__
 .venv
+nitradoUploaderFiles.py
+database/database.db

@@ -62,4 +62,13 @@ class Service:
             raise Exception("Arquivo inválido: o conteúdo não é um JSON válido.") from e
 
         self.__conn.createFile(name, file)
+      
+    def fileDelete(self, req: dict):
+        fileName = req.get("descricao")
         
+        if fileName is None:
+            raise Exception("invalid file name")
+        
+        file = self.__conn.consultarFileByName(fileName)
+        self.__conn.deleteFile(file.get("id"))  
+      

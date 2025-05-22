@@ -106,9 +106,9 @@
             background-color: #27ae60;
         }
 
-        #formOriginal,
         #formGerador,
-        #formUpload {
+        #formUpload,
+        #formDelete {
             display: none;
         }
     </style>
@@ -119,30 +119,11 @@
         <h2>Processar JSON</h2>
 
         <div class="tab-buttons">
-            <button id="tabCoord" class="active" onclick="mostrarAba('formOriginal')">🔄 Converter Coordenadas</button>
-            <button id="tabGerador" onclick="mostrarAba('formGerador')">⚙️ Gerador</button>
+            <button id="tabGerador" class="active" onclick="mostrarAba('formGerador')">⚙️ Gerador</button>
             <button id="tabUpload" onclick="mostrarAba('formUpload')">📤 Upload de Arquivo</button>
+            <button id="tabDelete" onclick="mostrarAba('formDelete')">🗑️ Deletar Arquivo</button>
         </div>
 
-        <!-- Aba: Conversão -->
-        <div id="formOriginal">
-            <label>Arquivo JSON:</label>
-            <input type="file" id="fileInput" accept=".json" />
-
-            <label>Coordenadas Originais (x, y, z):</label>
-            <input type="number" id="xOrigem" placeholder="X origem" step="any" />
-            <input type="number" id="yOrigem" placeholder="Y origem" step="any" />
-            <input type="number" id="zOrigem" placeholder="Z origem" step="any" />
-
-            <label>Coordenadas Novas (x, y, z):</label>
-            <input type="number" id="xNovo" placeholder="X novo" step="any" />
-            <input type="number" id="yNovo" placeholder="Y novo" step="any" />
-            <input type="number" id="zNovo" placeholder="Z novo" step="any" />
-
-            <button type="submit" onclick="enviarArquivo()">Enviar e Processar</button>
-        </div>
-
-        <!-- Aba: Gerador -->
         <div id="formGerador">
             <label>Tipo de Objeto:</label>
             <select id="tipoGerador">
@@ -157,7 +138,6 @@
             <button type="submit" onclick="gerarBase()">Gerar</button>
         </div>
 
-        <!-- Aba: Upload -->
         <div id="formUpload">
             <label>Descrição do Arquivo:</label>
             <input type="text" id="descricaoUpload" placeholder="Ex: Tenda militar norte" />
@@ -168,34 +148,39 @@
             <button type="submit" onclick="uploadArquivo()">Enviar Arquivo</button>
         </div>
 
+        <div id="formDelete">
+            <label>Selecione o arquivo para deletar:</label>
+            <select id="deleteFileSelect">
+                <option disabled selected>Carregando...</option>
+            </select>
+
+            <button type="submit" onclick="deletarArquivo()">Deletar Arquivo</button>
+        </div>
+
         <pre id="resultadoJson"></pre>
         <a id="downloadLink" download="arquivoAtualizado.json">⬇ Baixar JSON</a>
     </div>
 
     <script>
         async function mostrarAba(formId) {
-            const abas = ["formOriginal", "formGerador", "formUpload"];
+            const abas = ["formGerador", "formUpload", "formDelete"];
             abas.forEach(id => document.getElementById(id).style.display = "none");
             document.getElementById(formId).style.display = "block";
 
-            ["tabCoord", "tabGerador", "tabUpload"].forEach(tab => {
+            ["tabGerador", "tabUpload", "tabDelete"].forEach(tab => {
                 document.getElementById(tab).classList.remove("active");
             });
 
-            if (formId === "formOriginal") {
-                document.getElementById("tabCoord").classList.add("active");
-            } else if (formId === "formGerador") {
-                document.getElementById("tabGerador").classList.add("active");
-                await carregarTiposDeBase();
-            } else {
-                document.getElementById("tabUpload").classList.add("active");
-            }
+            document.getElementById("tab" + formId.charAt(4).toUpperCase() + formId.slice(5)).classList.add("active");
+
+            if (formId === "formGerador") await carregarTiposDeBase();
+            if (formId === "formDelete") await carregarArquivosParaDeletar();
 
             document.getElementById("resultadoJson").textContent = "";
             document.getElementById("downloadLink").style.display = "none";
         }
 
-        window.onload = () => mostrarAba("formOriginal");
+        window.onload = () => mostrarAba("formGerador");
 
         async function enviarArquivo() {
             const fileInput = document.getElementById("fileInput");
@@ -338,13 +323,37 @@
             }
         }
 
-        function exibirResultado(jsonString) {
-            document.getElementById("resultadoJson").textContent = jsonString;
-            const blob = new Blob([jsonString], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const link = document.getElementById("downloadLink");
-            link.href = url;
-            link.style.display = "inline-block";
+        async function deletarArquivo() {
+            const select = document.getElementById("deleteFileSelect");
+            const descricao = select.value;
+
+            if (!descricao) {
+                alert("Selecione um arquivo para deletar.");
+                return;
+            }
+
+            if (!confirm(`Tem certeza que deseja deletar o arquivo: "${descricao}"?`)) return;
+
+            try {
+                const resposta = await fetch("https://gustavosmd4dayzadapter.pythonanywhere.com/file/delete", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ "descricao": descricao })
+                });
+
+                if (!resposta.ok) {
+                    const erro = await resposta.json();
+                    throw new Error(erro.error || "Erro ao deletar arquivo.");
+                }
+
+                alert("Arquivo deletado com sucesso!");
+                await carregarArquivosParaDeletar(); // Recarrega a lista
+            } catch (erro) {
+                alert("Erro ao deletar: " + erro.message);
+                console.error(erro);
+            }
         }
 
         async function carregarTiposDeBase() {
@@ -353,13 +362,9 @@
 
             try {
                 const resposta = await fetch("https://gustavosmd4dayzadapter.pythonanywhere.com/files/names");
+                const nomes = await resposta.json();
 
-                const nomes = await resposta.json(); // ✅ lê o body uma vez
-
-                if (!Array.isArray(nomes)) {
-                    console.error("Resposta inválida:", nomes);
-                    throw new Error("Resposta inválida da API.");
-                }
+                if (!Array.isArray(nomes)) throw new Error("Resposta inválida da API.");
 
                 select.innerHTML = "";
                 nomes.forEach(nome => {
@@ -373,6 +378,39 @@
                 select.innerHTML = '<option disabled>Erro ao carregar opções</option>';
                 console.error("Erro ao buscar tipos de base:", erro);
             }
+        }
+
+        async function carregarArquivosParaDeletar() {
+            const select = document.getElementById("deleteFileSelect");
+            select.innerHTML = '<option disabled selected>Carregando...</option>';
+
+            try {
+                const resposta = await fetch("https://gustavosmd4dayzadapter.pythonanywhere.com/files/names");
+                const nomes = await resposta.json();
+
+                if (!Array.isArray(nomes)) throw new Error("Resposta inválida.");
+
+                select.innerHTML = "";
+                nomes.forEach(nome => {
+                    const opt = document.createElement("option");
+                    opt.value = nome;
+                    opt.textContent = nome;
+                    select.appendChild(opt);
+                });
+
+            } catch (erro) {
+                select.innerHTML = '<option disabled>Erro ao carregar arquivos</option>';
+                console.error("Erro ao carregar arquivos para deletar:", erro);
+            }
+        }
+
+        function exibirResultado(jsonString) {
+            document.getElementById("resultadoJson").textContent = jsonString;
+            const blob = new Blob([jsonString], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const link = document.getElementById("downloadLink");
+            link.href = url;
+            link.style.display = "inline-block";
         }
     </script>
 </body>

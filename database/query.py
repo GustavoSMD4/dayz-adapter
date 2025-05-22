@@ -4,19 +4,18 @@ import sqlite3
 conn = sqlite3.connect("database/database.db", check_same_thread=False)
 cursor = conn.cursor()
 
-cursor.execute("""
-    CREATE TABLE IF NOT EXISTS FILES(
-        ID INTEGER PRIMARY KEY AUTOINCREMENT,
-        DESCRICAO VARCHAR(100) NOT NULL UNIQUE,
-        FILE BLOB
-    )               
-""")
+# cursor.execute("""
+#     CREATE TABLE IF NOT EXISTS FILES(
+#         ID INTEGER PRIMARY KEY AUTOINCREMENT,
+#         DESCRICAO VARCHAR(100) NOT NULL UNIQUE,
+#         FILE BLOB
+#     )               
+# """)
 
 def adicionarArquivoTent():
     with open("tent.json", "rb") as f:
         file_data = f.read()
     
-    # Codifica em Base64 e converte para string
     file_base64 = base64.b64encode(file_data).decode('utf-8')
     
     descricao = "tent"
@@ -28,10 +27,8 @@ def adicionarArquivoTent():
     
     conn.commit()
 
-# Chamar a função
 adicionarArquivoTent()
 
-# Fechar conexão
 cursor.close()
 conn.close()
 

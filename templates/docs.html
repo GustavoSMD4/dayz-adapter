@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Documentação da API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+            background: #fafafa;
+            color: #333;
+        }
+
+        h1,
+        h2 {
+            color: #2c3e50;
+        }
+
+        pre {
+            background: #f0f0f0;
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+
+        section {
+            margin-bottom: 30px;
+        }
+
+        code {
+            background: #eee;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background: #3498db;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Documentação da API</h1>
+
+    <section>
+        <h2>GET /files/names</h2>
+        <p>Retorna uma lista com os nomes dos arquivos disponíveis.</p>
+        <strong>Resposta:</strong>
+        <pre>[
+  "arquivo1",
+  "arquivo2",
+  "arquivo3"
+]</pre>
+    </section>
+
+    <section>
+        <h2>GET /file/get/&lt;name&gt;</h2>
+        <p>Retorna o conteúdo do arquivo <code>name</code> codificado em base64 (texto plano).</p>
+        <strong>Parâmetros:</strong>
+        <table>
+            <thead>
+                <tr>
+                    <th>Parâmetro</th>
+                    <th>Descrição</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>name</td>
+                    <td>Nome do arquivo a ser obtido</td>
+                </tr>
+            </tbody>
+        </table>
+        <strong>Resposta:</strong>
+        <pre>Base64 encoded string of the file content</pre>
+    </section>
+
+    <section>
+        <h2>GET /file/get/&lt;name&gt;/json</h2>
+        <p>Retorna o conteúdo do arquivo <code>name</code> formatado como JSON.</p>
+        <strong>Parâmetros:</strong>
+        <table>
+            <thead>
+                <tr>
+                    <th>Parâmetro</th>
+                    <th>Descrição</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>name</td>
+                    <td>Nome do arquivo a ser obtido</td>
+                </tr>
+            </tbody>
+        </table>
+        <strong>Resposta:</strong>
+        <pre>JSON formatado do arquivo</pre>
+    </section>
+
+    <section>
+        <h2>POST /generator</h2>
+        <p>Gera um arquivo JSON base no tipo e coordenadas passadas.</p>
+        <strong>Request JSON:</strong>
+        <pre>{
+  "type": "tent",
+  "coordinates": [10.0, 5.0, 3.0]
+}</pre>
+        <strong>Resposta:</strong>
+        <pre>Base64 encoded JSON string</pre>
+    </section>
+
+    <section>
+        <h2>POST /file/upload</h2>
+        <p>Faz upload de um arquivo JSON codificado em base64 com uma descrição.</p>
+        <strong>Request JSON:</strong>
+        <pre>{
+  "descricao": "Descrição do arquivo",
+  "file": "base64_encoded_file_content"
+}</pre>
+        <strong>Resposta:</strong>
+        <pre>"Saved"</pre>
+    </section>
+
+    <section>
+        <h2>POST /file/delete</h2>
+        <p>Deleta um arquivo pelo nome.</p>
+        <strong>Request JSON:</strong>
+        <pre>{
+  "descricao": "Nome do arquivo a deletar"
+}</pre>
+        <strong>Resposta:</strong>
+        <pre>"Deleted"</pre>
+    </section>
+
+</body>
+
+</html>

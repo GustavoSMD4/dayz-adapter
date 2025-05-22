@@ -9,6 +9,10 @@ app = Flask(__name__)
 def indexHtml():
     return render_template("index.html")
 
+@app.route("/docs")
+def docs():
+    return render_template("docs.html")
+
 @app.route("/adapter", methods=["POST"])
 def adapter():
     try:

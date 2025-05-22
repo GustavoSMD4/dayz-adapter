@@ -43,6 +43,10 @@ class Service:
         
         return self.__generator.generator(coordinates, type)
     
+    def getFileByName(self, name):
+        file = self.__conn.consultarFileByName(name)
+        return file.get("file")
+    
     def getFilesNames(self):
         dadosRaw = self.__conn.consultarFilesNames()
         dados = []

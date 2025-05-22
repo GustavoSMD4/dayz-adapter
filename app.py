@@ -37,6 +37,16 @@ def getFilesNames():
     except Exception as e:
         return jsonify(str(e)), 400
     
+@app.route("/file/get/<name>")
+def getFileByName(name):
+    try:
+        response = make_response(Service.newService().getFileByName(name))
+        response.mimetype = "text/plain"
+        return response
+        
+    except Exception as e:
+        return jsonify(str(e)), 400
+    
 @app.route("/file/upload", methods=["POST"])
 def fileUpload():
     try:

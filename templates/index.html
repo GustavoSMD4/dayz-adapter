@@ -113,6 +113,21 @@
             background-color: #27ae60;
         }
 
+        #resultadoJson {
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            /* Quebra linha dentro do <pre> */
+            word-wrap: break-word;
+            /* Quebra palavras muito longas */
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+            font-family: 'Courier New', Courier, monospace;
+            border: 1px solid #ccc;
+        }
+
         #formGerador,
         #formUpload,
         #formDelete {
@@ -151,7 +166,7 @@
             <input type="text" id="descricaoUpload" placeholder="Ex: Tenda militar norte" />
 
             <label>Arquivo JSON:</label>
-            <input type="file" id="fileUploadInput" accept=".json" />
+            <input type="file" id="fileUploadInput" accept=".json" onchange="mostrarPreviewUpload()" />
 
             <button type="submit" onclick="uploadArquivo()">Enviar Arquivo</button>
         </div>
@@ -162,10 +177,11 @@
                 <option disabled selected>Carregando...</option>
             </select>
 
+            <button type="button" onclick="visualizarJsonDelete()">Visualizar JSON</button>
             <button type="submit" onclick="deletarArquivo()">Deletar Arquivo</button>
         </div>
 
-        <pre id="resultadoJson"></pre>
+        <pre id="resultadoJson" style="display:none;"></pre>
         <a id="downloadLink" download="arquivoAtualizado.json">⬇ Baixar JSON</a>
     </div>
 
@@ -329,12 +345,74 @@
         }
 
         function exibirResultado(jsonString) {
-            document.getElementById("resultadoJson").textContent = jsonString;
+            // Mostrar o JSON no <pre>
+            const pre = document.getElementById("resultadoJson");
+            pre.textContent = jsonString;
+            pre.style.display = "block";
+
+            // Criar o blob e link para download
             const blob = new Blob([jsonString], { type: "application/json" });
             const url = URL.createObjectURL(blob);
             const link = document.getElementById("downloadLink");
             link.href = url;
+
+            // Perguntar o nome do arquivo para salvar
+            let nomeArquivo = prompt("Digite o nome do arquivo para salvar (sem extensão):", "arquivoAtualizado");
+            if (!nomeArquivo) {
+                nomeArquivo = "arquivoAtualizado";
+            }
+            if (!nomeArquivo.toLowerCase().endsWith(".json")) {
+                nomeArquivo += ".json";
+            }
+            link.download = nomeArquivo;
             link.style.display = "inline-block";
+        }
+
+        function mostrarPreviewUpload() {
+            const input = document.getElementById("fileUploadInput");
+            const file = input.files[0];
+            const pre = document.getElementById("resultadoJson");
+
+            if (!file) {
+                pre.style.display = "none";
+                pre.textContent = "";
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                pre.textContent = e.target.result;
+                pre.style.display = "block";  // AQUI: torna visível
+            };
+            reader.readAsText(file);
+        }
+
+        // Função que busca o JSON do arquivo selecionado para deletar e mostra no <pre>
+        async function visualizarJsonDelete() {
+            const select = document.getElementById("deleteFileSelect");
+            const arquivo = select.value;
+            const pre = document.getElementById("resultadoJson");
+
+            if (!arquivo) {
+                alert("Selecione um arquivo para visualizar.");
+                return;
+            }
+
+            try {
+                pre.textContent = "Carregando...";
+                pre.style.display = "block";
+
+                const resposta = await fetch(`https://gustavosmd4dayzadapter.pythonanywhere.com/file/get/${encodeURIComponent(arquivo)}`);
+                if (!resposta.ok) throw new Error(await resposta.text());
+
+                const base64String = await resposta.text();
+                const jsonString = atob(base64String);
+
+                pre.textContent = jsonString;
+            } catch (erro) {
+                pre.textContent = "Erro ao carregar o arquivo JSON: " + erro.message;
+                console.error(erro);
+            }
         }
     </script>
 </body>

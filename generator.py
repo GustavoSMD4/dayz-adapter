@@ -21,22 +21,28 @@ class BaseGenerator:
         json_str = json_bytes.decode("utf-8")
         data = json.loads(json_str)
 
-        total_x = total_z = 0.0
+        min_x = min_z = float('inf')
+        max_x = max_z = float('-inf')
         min_y = float('inf')
-        count = 0
 
         for obj in data.get("Objects", []):
             if 'pos' in obj:
                 x, y, z = obj['pos']
-                total_x += x
-                total_z += z
+                min_x = min(min_x, x)
+                max_x = max(max_x, x)
+                min_z = min(min_z, z)
+                max_z = max(max_z, z)
                 min_y = min(min_y, y)
-                count += 1
 
-        if count == 0:
+        if min_x == float('inf'):
             raise Exception("Nenhum objeto com posição encontrada.")
 
-        originalCoordinates = [total_x / count, min_y, total_z / count]
+        # Centro do bounding box em X e Z, e menor Y
+        originalCoordinates = [
+            (min_x + max_x) / 2,  # centro em X
+            min_y,                # ponto mais baixo em Y
+            (min_z + max_z) / 2   # centro em Z
+        ]
 
         for obj in data.get("Objects", []):
             if 'pos' in obj:

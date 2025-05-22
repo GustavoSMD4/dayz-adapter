@@ -25,6 +25,13 @@
             color: #2c3e50;
         }
 
+        #mensagem {
+            margin: 10px 0;
+            font-weight: bold;
+            text-align: center;
+            color: red;
+        }
+
         .tab-buttons {
             display: flex;
             justify-content: space-between;
@@ -117,6 +124,7 @@
 <body>
     <div class="container">
         <h2>Processar JSON</h2>
+        <div id="mensagem"></div>
 
         <div class="tab-buttons">
             <button id="tabGerador" class="active" onclick="mostrarAba('formGerador')">⚙️ Gerador</button>
@@ -178,72 +186,13 @@
 
             document.getElementById("resultadoJson").textContent = "";
             document.getElementById("downloadLink").style.display = "none";
+            document.getElementById("mensagem").textContent = "";
         }
 
         window.onload = () => mostrarAba("formGerador");
 
-        async function enviarArquivo() {
-            const fileInput = document.getElementById("fileInput");
-            const file = fileInput.files[0];
-
-            if (!file) {
-                alert("Selecione um arquivo JSON.");
-                return;
-            }
-
-            const coords = (ids) =>
-                ids.map((id) => {
-                    const val = parseFloat(document.getElementById(id).value);
-                    if (isNaN(val)) throw new Error("Preencha todas as coordenadas corretamente.");
-                    return val;
-                });
-
-            let originalCoordinates, newCoordinates;
-            try {
-                originalCoordinates = coords(["xOrigem", "yOrigem", "zOrigem"]);
-                newCoordinates = coords(["xNovo", "yNovo", "zNovo"]);
-            } catch (e) {
-                alert(e.message);
-                return;
-            }
-
-            const base64 = await new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result.split(",")[1]);
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
-
-            const payload = {
-                file: base64,
-                originalCoordinates,
-                newCoordinates,
-            };
-
-            try {
-                const resposta = await fetch("https://gustavosmd4dayzadapter.pythonanywhere.com/adapter", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(payload),
-                });
-
-                if (!resposta.ok) {
-                    const erro = await resposta.json();
-                    throw new Error(erro.error || "Erro desconhecido.");
-                }
-
-                const base64Resposta = await resposta.text();
-                const jsonString = atob(base64Resposta);
-                exibirResultado(jsonString);
-            } catch (erro) {
-                alert("Erro ao processar o arquivo: " + erro.message);
-                console.error(erro);
-            }
-        }
-
         async function gerarBase() {
+            document.getElementById("mensagem").textContent = "";
             const tipo = document.getElementById("tipoGerador").value;
             const coords = ["xGerador", "yGerador", "zGerador"].map(id => {
                 const val = parseFloat(document.getElementById(id).value);
@@ -251,40 +200,33 @@
                 return val;
             });
 
-            const payload = {
-                type: tipo,
-                coordinates: coords
-            };
+            const payload = { type: tipo, coordinates: coords };
 
             try {
                 const resposta = await fetch("https://gustavosmd4dayzadapter.pythonanywhere.com/generator", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(payload),
                 });
 
-                if (!resposta.ok) {
-                    const erro = await resposta.json();
-                    throw new Error(erro.error || "Erro ao gerar base.");
-                }
+                if (!resposta.ok) throw new Error(await resposta.text());
 
                 const base64Resposta = await resposta.text();
                 const jsonString = atob(base64Resposta);
                 exibirResultado(jsonString);
             } catch (erro) {
-                alert("Erro ao gerar base: " + erro.message);
+                document.getElementById("mensagem").textContent = erro.message;
                 console.error(erro);
             }
         }
 
         async function uploadArquivo() {
+            document.getElementById("mensagem").textContent = "";
             const descricao = document.getElementById("descricaoUpload").value.trim();
             const file = document.getElementById("fileUploadInput").files[0];
 
             if (!descricao || !file) {
-                alert("Preencha a descrição e selecione um arquivo JSON.");
+                document.getElementById("mensagem").textContent = "Preencha a descrição e selecione um arquivo JSON.";
                 return;
             }
 
@@ -296,39 +238,32 @@
                     reader.readAsDataURL(file);
                 });
 
-                const payload = {
-                    descricao: descricao,
-                    file: base64
-                };
+                const payload = { descricao: descricao, file: base64 };
 
                 const resposta = await fetch("https://gustavosmd4dayzadapter.pythonanywhere.com/file/upload", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(payload)
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
                 });
 
-                if (!resposta.ok) {
-                    const erro = await resposta.json();
-                    throw new Error(erro.error || "Erro ao enviar arquivo.");
-                }
+                if (!resposta.ok) throw new Error(await resposta.text());
 
-                alert("Arquivo enviado com sucesso!");
+                document.getElementById("mensagem").textContent = "Arquivo enviado com sucesso!";
                 document.getElementById("descricaoUpload").value = "";
                 document.getElementById("fileUploadInput").value = "";
             } catch (erro) {
-                alert("Erro no upload: " + erro.message);
+                document.getElementById("mensagem").textContent = erro.message;
                 console.error(erro);
             }
         }
 
         async function deletarArquivo() {
+            document.getElementById("mensagem").textContent = "";
             const select = document.getElementById("deleteFileSelect");
             const descricao = select.value;
 
             if (!descricao) {
-                alert("Selecione um arquivo para deletar.");
+                document.getElementById("mensagem").textContent = "Selecione um arquivo para deletar.";
                 return;
             }
 
@@ -337,21 +272,16 @@
             try {
                 const resposta = await fetch("https://gustavosmd4dayzadapter.pythonanywhere.com/file/delete", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ "descricao": descricao })
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ descricao }),
                 });
 
-                if (!resposta.ok) {
-                    const erro = await resposta.json();
-                    throw new Error(erro.error || "Erro ao deletar arquivo.");
-                }
+                if (!resposta.ok) throw new Error(await resposta.text());
 
-                alert("Arquivo deletado com sucesso!");
-                await carregarArquivosParaDeletar(); // Recarrega a lista
+                document.getElementById("mensagem").textContent = "Arquivo deletado com sucesso!";
+                await carregarArquivosParaDeletar();
             } catch (erro) {
-                alert("Erro ao deletar: " + erro.message);
+                document.getElementById("mensagem").textContent = erro.message;
                 console.error(erro);
             }
         }
@@ -359,13 +289,11 @@
         async function carregarTiposDeBase() {
             const select = document.getElementById("tipoGerador");
             select.innerHTML = '<option disabled selected>Carregando...</option>';
-
             try {
                 const resposta = await fetch("https://gustavosmd4dayzadapter.pythonanywhere.com/files/names");
                 const nomes = await resposta.json();
 
                 if (!Array.isArray(nomes)) throw new Error("Resposta inválida da API.");
-
                 select.innerHTML = "";
                 nomes.forEach(nome => {
                     const opt = document.createElement("option");
@@ -373,23 +301,20 @@
                     opt.textContent = nome.charAt(0).toUpperCase() + nome.slice(1);
                     select.appendChild(opt);
                 });
-
             } catch (erro) {
                 select.innerHTML = '<option disabled>Erro ao carregar opções</option>';
-                console.error("Erro ao buscar tipos de base:", erro);
+                console.error(erro);
             }
         }
 
         async function carregarArquivosParaDeletar() {
             const select = document.getElementById("deleteFileSelect");
             select.innerHTML = '<option disabled selected>Carregando...</option>';
-
             try {
                 const resposta = await fetch("https://gustavosmd4dayzadapter.pythonanywhere.com/files/names");
                 const nomes = await resposta.json();
 
                 if (!Array.isArray(nomes)) throw new Error("Resposta inválida.");
-
                 select.innerHTML = "";
                 nomes.forEach(nome => {
                     const opt = document.createElement("option");
@@ -397,10 +322,9 @@
                     opt.textContent = nome;
                     select.appendChild(opt);
                 });
-
             } catch (erro) {
                 select.innerHTML = '<option disabled>Erro ao carregar arquivos</option>';
-                console.error("Erro ao carregar arquivos para deletar:", erro);
+                console.error(erro);
             }
         }
 

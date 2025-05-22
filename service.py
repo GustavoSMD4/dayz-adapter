@@ -59,7 +59,7 @@ class Service:
             decoded = base64.b64decode(file)
             json.loads(decoded.decode("utf-8"))
         except Exception as e:
-            raise Exception("Arquivo inválido: o conteúdo não é um JSON válido.") from e
+            raise Exception("Invalid file: verify JSON syntax.") from e
 
         self.__conn.createFile(name, file)
       

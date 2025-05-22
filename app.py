@@ -1,4 +1,4 @@
-from flask import Flask, make_response, request, jsonify, render_template
+from flask import Flask, Response, make_response, request, jsonify, render_template
 # from flask_cors import CORS
 from service import Service
 
@@ -44,6 +44,14 @@ def getFileByName(name):
         response.mimetype = "text/plain"
         return response
         
+    except Exception as e:
+        return jsonify(str(e)), 400
+    
+@app.route("/file/get/<name>/json")
+def getFileByNameJson(name):
+    try:
+        json = Service.newService().getFileByNameJson(name)
+        return Response(json, mimetype='application/json')
     except Exception as e:
         return jsonify(str(e)), 400
     

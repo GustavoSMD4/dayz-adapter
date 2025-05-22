@@ -47,6 +47,15 @@ class Service:
         file = self.__conn.consultarFileByName(name)
         return file.get("file")
     
+    def getFileByNameJson(self, name):
+        if name not in self.getFilesNames():
+            raise Exception("The specified file does not exist.")
+        
+        file = self.__conn.consultarFileByName(name)
+        json_str = base64.b64decode(file.get("file")).decode('utf-8')
+        json_obj = json.loads(json_str)
+        return json.dumps(json_obj, indent=4, ensure_ascii=False)
+    
     def getFilesNames(self):
         dadosRaw = self.__conn.consultarFilesNames()
         dados = []

@@ -3,26 +3,90 @@
 
 <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Processar JSON</title>
     <style>
+        :root {
+            --bg-color: #f4f6f8;
+            --text-color: #2c3e50;
+            --card-bg: #ffffff;
+            --button-bg: #ecf0f1;
+            --button-active-bg: #3498db;
+            --button-active-color: #ffffff;
+            --highlight: #f0f0f0;
+            --download-bg: #2ecc71;
+            --download-hover: #27ae60;
+        }
+
+        body.dark-mode {
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+            --card-bg: #1e1e1e;
+            --button-bg: #333333;
+            --button-active-bg: #2196f3;
+            --button-active-color: #ffffff;
+            --highlight: #2a2a2a;
+            --download-bg: #27ae60;
+            --download-hover: #1e8449;
+        }
+
+        html,
         body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             font-family: 'Segoe UI', sans-serif;
-            background-color: #f4f6f8;
+            box-sizing: border-box;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: inherit;
+        }
+
+        .appbar {
+            flex-shrink: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: var(--card-bg);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .appbar h1 {
+            font-size: 1.2rem;
             margin: 0;
         }
 
+        .appbar button {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-color);
+        }
+
         .container {
-            max-width: 600px;
-            margin: 50px auto;
-            background: #fff;
-            border-radius: 10px;
-            padding: 30px;
+            flex: 1;
+            width: 100%;
+            padding: 30px 20px;
+            background: var(--card-bg);
+            border-radius: 0;
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
         }
 
         h2 {
             text-align: center;
-            color: #2c3e50;
+            color: var(--text-color);
         }
 
         #mensagem {
@@ -44,8 +108,8 @@
             flex: 1;
             padding: 12px;
             border: none;
-            background-color: #ecf0f1;
-            color: #2c3e50;
+            background-color: var(--button-bg);
+            color: var(--text-color);
             cursor: pointer;
             font-weight: bold;
             transition: background 0.3s;
@@ -53,8 +117,8 @@
         }
 
         .tab-buttons button.active {
-            background-color: #3498db;
-            color: white;
+            background-color: var(--button-active-bg);
+            color: var(--button-active-color);
         }
 
         label {
@@ -72,13 +136,15 @@
             margin-top: 6px;
             border: 1px solid #ccc;
             border-radius: 6px;
+            background-color: var(--card-bg);
+            color: var(--text-color);
         }
 
         button[type="submit"] {
             width: 100%;
             padding: 12px;
             margin-top: 25px;
-            background-color: #3498db;
+            background-color: var(--button-active-bg);
             color: white;
             border: none;
             border-radius: 6px;
@@ -91,7 +157,7 @@
         }
 
         pre {
-            background: #f0f0f0;
+            background: var(--highlight);
             padding: 15px;
             border-radius: 6px;
             margin-top: 20px;
@@ -102,7 +168,7 @@
             display: none;
             margin-top: 15px;
             padding: 10px 20px;
-            background-color: #2ecc71;
+            background-color: var(--download-bg);
             color: white;
             text-decoration: none;
             border-radius: 6px;
@@ -110,21 +176,20 @@
         }
 
         a#downloadLink:hover {
-            background-color: #27ae60;
+            background-color: var(--download-hover);
         }
 
         #resultadoJson {
             max-height: 300px;
             overflow-y: auto;
             white-space: pre-wrap;
-            /* Quebra linha dentro do <pre> */
             word-wrap: break-word;
-            /* Quebra palavras muito longas */
-            background: #f0f0f0;
+            background: var(--highlight);
             padding: 15px;
             border-radius: 6px;
             margin-top: 20px;
             font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
             border: 1px solid #ccc;
         }
 
@@ -133,10 +198,31 @@
         #formDelete {
             display: none;
         }
+
+        @media (max-width: 600px) {
+            .tab-buttons {
+                flex-direction: column;
+            }
+
+            .tab-buttons button {
+                border-radius: 6px;
+            }
+
+            .appbar h1 {
+                font-size: 1rem;
+            }
+        }
     </style>
+
+
 </head>
 
 <body>
+    <div class="appbar">
+        <h1>Processar JSON</h1>
+        <button onclick="alternarTema()" title="Trocar tema">🌓</button>
+    </div>
+
     <div class="container">
         <h2>Processar JSON</h2>
         <div id="mensagem"></div>
@@ -413,6 +499,10 @@
                 pre.textContent = "Erro ao carregar o arquivo JSON: " + erro.message;
                 console.error(erro);
             }
+        }
+
+        function alternarTema() {
+            document.body.classList.toggle("dark-mode");
         }
     </script>
 </body>

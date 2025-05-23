@@ -54,6 +54,15 @@
             background: #3498db;
             color: white;
         }
+
+        a.route-link {
+            color: #2980b9;
+            text-decoration: none;
+        }
+
+        a.route-link:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 
@@ -61,7 +70,8 @@
     <h1>Documentação da API</h1>
 
     <section>
-        <h2>GET /files/names</h2>
+        <h2><a class="route-link" href="https://gustavosmd4dayzadapter.pythonanywhere.com/files/names"
+                target="_blank">GET /files/names</a></h2>
         <p>Retorna uma lista com os nomes dos arquivos disponíveis.</p>
         <strong>Resposta:</strong>
         <pre>[
@@ -72,7 +82,8 @@
     </section>
 
     <section>
-        <h2>GET /file/get/&lt;name&gt;</h2>
+        <h2><a class="route-link" href="https://gustavosmd4dayzadapter.pythonanywhere.com/file/get/&lt;name&gt;"
+                target="_blank">GET /file/get/&lt;name&gt;</a></h2>
         <p>Retorna o conteúdo do arquivo <code>name</code> codificado em base64 (texto plano).</p>
         <strong>Parâmetros:</strong>
         <table>
@@ -94,7 +105,8 @@
     </section>
 
     <section>
-        <h2>GET /file/get/&lt;name&gt;/json</h2>
+        <h2><a class="route-link" href="https://gustavosmd4dayzadapter.pythonanywhere.com/file/get/&lt;name&gt;/json"
+                target="_blank">GET /file/get/&lt;name&gt;/json</a></h2>
         <p>Retorna o conteúdo do arquivo <code>name</code> formatado como JSON.</p>
         <strong>Parâmetros:</strong>
         <table>
@@ -116,7 +128,8 @@
     </section>
 
     <section>
-        <h2>POST /generator</h2>
+        <h2><a class="route-link" href="https://gustavosmd4dayzadapter.pythonanywhere.com/generator"
+                target="_blank">POST /generator</a></h2>
         <p>Gera um arquivo JSON base no tipo e coordenadas passadas.</p>
         <strong>Request JSON:</strong>
         <pre>{
@@ -128,7 +141,8 @@
     </section>
 
     <section>
-        <h2>POST /file/upload</h2>
+        <h2><a class="route-link" href="https://gustavosmd4dayzadapter.pythonanywhere.com/file/upload"
+                target="_blank">POST /file/upload</a></h2>
         <p>Faz upload de um arquivo JSON codificado em base64 com uma descrição.</p>
         <strong>Request JSON:</strong>
         <pre>{
@@ -140,7 +154,8 @@
     </section>
 
     <section>
-        <h2>POST /file/delete</h2>
+        <h2><a class="route-link" href="https://gustavosmd4dayzadapter.pythonanywhere.com/file/delete"
+                target="_blank">POST /file/delete</a></h2>
         <p>Deleta um arquivo pelo nome.</p>
         <strong>Request JSON:</strong>
         <pre>{
